@@ -44,8 +44,8 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
 4. Import existed legacy-formatted Projects using ```Import Trajectories``` button
 
-    After clicking the Import Trajectories button, 
-    First, you will be asked to Select the Folder of the Legacy Project you want to import.
+    After clicking the Import Trajectories button, <br>
+    First, you will be asked to Select the Folder of the Legacy Project you want to import. <br>
     Then, another window pop up asking you to Select the Folder where the Interpreted project will be stored (only the .csv files are transfered so you don't have to worry about having video files in the Legacy Project)
 
 
