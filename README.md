@@ -28,7 +28,7 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
     ![download_button](https://github.com/ThangLC304/EwA/blob/main/Bin/support/download_button.png)
 
-2. Unzip the file, within the App Folder, run the ```new_setup.bat``` file to install independencies
+2. Unzip the file, within the App Folder, run the ```setup.bat``` file to install independencies
 
 3. Run the program using ```run.bat```
 
