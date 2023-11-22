@@ -24,7 +24,7 @@ from Libs.project import CreateProject
 from Libs.executor import Executor
 
 
-customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("Libs/dark_red.json")
 
 
