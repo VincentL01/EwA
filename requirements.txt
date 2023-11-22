@@ -10,3 +10,4 @@ num2words
 pathlib
 customtkinter
 colorlog
+scipy
