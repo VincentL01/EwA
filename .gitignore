@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Custom
+Log/*
+*.ipynb
+test*.py
+*_old.py
+
 # Distribution / packaging
 .Python
 build/
