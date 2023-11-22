@@ -24,7 +24,7 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
 ## INSTALLATION GUIDE
 
-1. Download ```.zip``` file of the whole repository by click on ```Code``` button and select ```Download ZIP``
+1. Download ```.zip``` file of the whole repository by click on ```Code``` button and select ```Download ZIP```
 
     ![download_button](https://github.com/ThangLC304/EwA/blob/main/Bin/support/download_button.png)
 
