@@ -104,7 +104,8 @@ class Executor():
     def __init__(self, 
                  project_dir=None, 
                  day_num=1, 
-                 treatment_char="A", 
+                 treatment_char="A",
+                 treatment_name="Control",
                  EndPointsAnalyze=True, 
                  progress_window=None):
 
@@ -138,6 +139,11 @@ class Executor():
             logger.warning("No treatment index specified. Using 'A' instead.")
         else:
             self.treatment_char = treatment_char
+
+        if len(treatment_name) > 30:
+            self.treatment_name = treatment_name[:30]
+        else:
+            self.treatment_name = treatment_name
 
         self.timing["Project structure"] = time.time() - _starttime
         
@@ -196,13 +202,13 @@ class Executor():
                 return "Existed", None
             
             if REPORT == "Analyzed" and OVERWRITE:
-                logger.info(f"Removing existing sheet of {self.treatment_char}...")
+                logger.info(f"Removing existing sheet of {self.treatment_name}...")
 
                 try:
-                    remove_sheet_by_name(self.excel_path, self.treatment_char)
-                    logger.info(f"Existing sheet of {self.treatment_char} removed.")
+                    remove_sheet_by_name(self.excel_path, self.treatment_name)
+                    logger.info(f"Existing sheet of {self.treatment_name} removed.")
                 except:
-                    logger.error(f"Failed to remove existing sheet of {self.treatment_char}.")
+                    logger.error(f"Failed to remove existing sheet of {self.treatment_name}.")
                     return "Skip", None
                 
 
@@ -248,7 +254,7 @@ class Executor():
             return "Not analyzed"
         
         # open the workbook to see if there is sheetname == self.treatment_char
-        if check_sheet_existence(self.excel_path, self.treatment_char):
+        if check_sheet_existence(self.excel_path, self.treatment_name):
             return "Analyzed"
         
         return "Not analyzed"
@@ -274,7 +280,7 @@ class Executor():
 
         append_df_to_excel(filename = excel_path,
                    df = df_endpoints,
-                   sheet_name=self.treatment_char)
+                   sheet_name=self.treatment_name)
         logger.debug(f"EndPoints.xlsx is saved to {excel_path}")
 
         excel_polish(excel_path)

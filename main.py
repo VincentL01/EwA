@@ -838,7 +838,7 @@ class MainApp(customtkinter.CTk):
         
         return True
 
-    def analyze_treatment(self, PROGRESS_WINDOW, treatment_char = None):
+    def analyze_treatment(self, PROGRESS_WINDOW, treatment_char = None, treatment_name = None):
 
         if self.CURRENT_PROJECT == "":
             tkinter.messagebox.showerror("Error", "Please select a project")
@@ -865,6 +865,7 @@ class MainApp(customtkinter.CTk):
         EXECUTOR = Executor(project_dir=project_dir, 
                             day_num = day_num, 
                             treatment_char=treatment_char, 
+                            treatment_name=treatment_name,
                             EndPointsAnalyze=self.EPA,
                             progress_window=PROGRESS_WINDOW)
         
@@ -946,15 +947,25 @@ class MainApp(customtkinter.CTk):
 
         time_for_treatment = {}
 
-        TREATMENT_LIST_CHAR = [self.treatment_to_treatment_char(treatment) for treatment in self.TREATMENTLIST]
+        CHAR_TREATMENT_DICT = {self.treatment_to_treatment_char(treatment): treatment for treatment in self.TREATMENTLIST}
+        # TREATMENT_LIST_CHAR = [self.treatment_to_treatment_char(treatment) for treatment in self.TREATMENTLIST]
 
-        for i, treatment_char in enumerate(TREATMENT_LIST_CHAR):
-            _message = f"Analyzing treatment {treatment_char}"
-            _progress = (i+1) / len(TREATMENT_LIST_CHAR) * 100
+        # for i, treatment_char in enumerate(TREATMENT_LIST_CHAR):
+        i = 0
+        for treatment_char, treatment_name in CHAR_TREATMENT_DICT.items():
+
+            # _message = f"Analyzing treatment {treatment_char}"
+            # _progress = (i+1) / len(TREATMENT_LIST_CHAR) * 100
+            _message = f"Analyzing {treatment_name}"
+            _progress = (i+1) / len(CHAR_TREATMENT_DICT) * 100
             PROGRESS_WINDOW.group_update(_progress, text = _message)
             logger.info(_message)
-            EPA_path, static_path = self.analyze_treatment(PROGRESS_WINDOW, treatment_char=treatment_char)
+            EPA_path, static_path = self.analyze_treatment(PROGRESS_WINDOW, 
+                                                           treatment_char=treatment_char, 
+                                                           treatment_name=treatment_name)
 
+            i+= 1
+            
             if EPA_path == None and static_path == None:
                 PROGRESS_WINDOW.destroy()
                 return
@@ -968,8 +979,9 @@ class MainApp(customtkinter.CTk):
 
         _message = f"Time taken: {round(time.time() - time00, 2)} seconds"
         _message += f"\nTime taken for each treatment:"
-        for treatment_char in TREATMENT_LIST_CHAR:
-            _message += f"\n  {treatment_char}: {round(time_for_treatment[treatment_char], 2)} seconds"
+        # for treatment_char in TREATMENT_LIST_CHAR:
+        for treatment_char, treatment_name in CHAR_TREATMENT_DICT.items():
+            _message += f"\n  {treatment_name}: {round(time_for_treatment[treatment_char], 2)} seconds"
         tkinter.messagebox.showinfo("Completion time", _message)
 
 

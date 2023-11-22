@@ -1,106 +1,106 @@
 {
-    "tester": {
-        "Day 1": {
-            "Treatment A": [
-                "Control",
-                "",
-                0.5,
-                ""
-            ],
-            "Treatment B": [
-                "eux",
-                0.5,
-                "ppm",
-                ""
-            ],
-            "Treatment C": [
-                "eux",
-                5.0,
-                "ppm",
-                ""
-            ]
-        },
-        "DIRECTORY": "/Users/lap02410/Documents/VSCode/TestProjects/tester"
+  "tester": {
+    "Day 1": {
+      "Treatment A": [
+        "Control",
+        "",
+        0.5,
+        ""
+      ],
+      "Treatment B": [
+        "eux",
+        0.5,
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "eux",
+        5.0,
+        "ppm",
+        ""
+      ]
     },
-    "Eu (Finish Calculate)": {
-        "Day 1": {
-            "Treatment A": [
-                "Control",
-                "",
-                "",
-                ""
-            ],
-            "Treatment B": [
-                "Eu",
-                "0.1",
-                "ppm",
-                ""
-            ],
-            "Treatment C": [
-                "Eu",
-                "1",
-                "ppm",
-                ""
-            ],
-            "Treatment D": [
-                "Eu",
-                "10",
-                "ppm",
-                ""
-            ]
-        },
-        "Day 2": {
-            "Treatment A": [
-                "Control",
-                "",
-                "",
-                ""
-            ],
-            "Treatment B": [
-                "Eu",
-                "0.1",
-                "ppm",
-                ""
-            ],
-            "Treatment C": [
-                "Eu",
-                "1",
-                "ppm",
-                ""
-            ],
-            "Treatment D": [
-                "Eu",
-                "10",
-                "ppm",
-                ""
-            ]
-        },
-        "Day 3": {
-            "Treatment A": [
-                "Control",
-                "",
-                "",
-                ""
-            ],
-            "Treatment B": [
-                "Eu",
-                "0.1",
-                "ppm",
-                ""
-            ],
-            "Treatment C": [
-                "Eu",
-                "1",
-                "ppm",
-                ""
-            ],
-            "Treatment D": [
-                "Eu",
-                "10",
-                "ppm",
-                ""
-            ]
-        },
-        "DIRECTORY": "/Users/lap02410/Documents/VSCode/TestProjects/Eu (Fnish Calculated)"
-    }
+    "DIRECTORY": "/Users/lap02410/Documents/VSCode/TestProjects/tester"
+  },
+  "Eu (Finish Calculate)": {
+    "Day 1": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "Day 2": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "Day 3": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "DIRECTORY": "/Users/lap02410/Documents/VSCode/TestProjects/Eu (Finish Calculate)"
+  }
 }
