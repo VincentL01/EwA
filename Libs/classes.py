@@ -161,9 +161,9 @@ class HISTORY():
         except KeyError:
             project_dir = self.find_dir(project_name)
 
-
         # check if the project directory exists
         if not os.path.exists(project_dir):
+            logger.warning("Project directory does not exist, asking for relocation")
             project_dir = self.find_dir(project_name)
 
         return project_dir       

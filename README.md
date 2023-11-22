@@ -46,7 +46,27 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
     After clicking the Import Trajectories button, <br>
     First, you will be asked to Select the Folder of the Legacy Project you want to import. <br>
-    Then, another window pop up asking you to Select the Folder where the Interpreted project will be stored (only the .csv files are transfered so you don't have to worry about having video files in the Legacy Project)
+    Then, another window pop up asking you to Select the Folder where the Interpreted project will be stored (only the .csv files are transfered so you don't have to worry about having video files in the Legacy Project) <br>
+    <br>
+    e.g., If you Legacy Project is "Eu (Finish Calculated)" stored at "C:\EarthwormProject\Eu (Finished Calculated)" <br>
+    In the first window, select that folder <br>
+    In the second window, if you select a folder at "D:\ReAnalysis" <br>
+    A new folder with the exact same name with the Legacy Project will be created inside "D:\ReAnalysis", the path will be "D:\ReAnalysis\Eu (Finish Calculated)" <br>
+    **Please refrain from changing the directory name at the new location**
+
+
+
+## Regular questions:
+
+1. What if I have changed the name of the directory name at the new location?
+
+A: If there is no other folder with the name exactly like the old name of the project, when you use the ```Load Project``` button, the App will ask you to select the new location of the project so it can update within its memory. <br>
+<br>
+If you changed the name of the directory and then you created a new directory with the same exact name, the App will recognize the new empty folder as the valid path for the Project, hence not asking you for relocation -> Mismatching issue.
+
+2. When I want to update the program, do I have to go to your GitHub Repository to download new version and replace the old one?
+
+A: Fortunately no, you can use the ```updater.bat``` to check to update the app.
 
 
 

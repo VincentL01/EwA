@@ -362,6 +362,11 @@ class MainApp(customtkinter.CTk):
             ErrorType = f"Project {cp} doesn't exist"
             logger.warning(ErrorType)
             return None, ErrorType
+        
+        # Check if the project directory exists
+        project_dir = projects_data[cp]["DIRECTORY"]
+        if not os.path.isdir(project_dir):
+            project_dir = THE_HISTORY.find_dir(project_name = cp)
     
         # How many Day files are there?
         day_quantity = 0
