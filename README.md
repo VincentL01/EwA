@@ -34,9 +34,12 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
 ## APP NAVIGATION
 
+![App_Screen](https://github.com/ThangLC304/EwA/blob/main/Bin/support/app_screen.png)
+
+
 1. Create new Project from scratch using ```Create Project``` button
 
-    ![App_Screen](https://github.com/ThangLC304/EwA/blob/main/Bin/support/app_screen.png)
+    ![create_project](https://github.com/ThangLC304/EwA/blob/main/Bin/support/create_project.png)
 
 2. Select Project from available ones within the Project List -> ```Load Project```
 
