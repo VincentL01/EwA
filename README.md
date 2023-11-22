@@ -26,7 +26,7 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
 1. Download ```.zip``` file of the whole repository by click on ```Code``` button and select ```Download ZIP``
 
-    ![download_button](https://github.com/ThangLC304/EwA/blob/main/bin/support/download_button.png?raw=true)
+    ![download_button](https://github.com/ThangLC304/EwA/blob/main/bin/support/download_button.png)
 
 2. Unzip the file, within the App Folder, run the ```new_setup.bat``` file to install independencies
 
@@ -36,7 +36,7 @@ Earthworm Analyzer is the new software we build to accelerate the Earthworm Assa
 
 1. Create new Project from scratch using ```Create Project``` button
 
-    ![App_Screen](https://github.com/ThangLC304/EwA/blob/main/bin/support/app_screen.png?raw=true)
+    ![App_Screen](https://github.com/ThangLC304/EwA/blob/main/Bin/support/app_screen.png)
 
 2. Select Project from available ones within the Project List -> ```Load Project```
 
