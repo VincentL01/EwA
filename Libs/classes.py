@@ -135,6 +135,7 @@ class HISTORY():
 
 
     def find_dir(self, project_name):
+        logger.debug("find_dir called")
         tkinter.messagebox.showerror("Error", "Project directory does not exist!")
         logger.info(f"Project directory of {project_name} does not exist. Asking for relocation")
         relocate = tkinter.messagebox.askyesno("Project not found", "Do you want to relocate it?")
@@ -157,8 +158,10 @@ class HISTORY():
             logger.warning("Tried to get project directory of an empty project name")
             return None
         try:
+            logger.debug("Trying to get project directory from history file")
             project_dir = self.projects_data[project_name]["DIRECTORY"]
         except KeyError:
+            logger.warning(f"Project name {project_name} not found in history file")
             project_dir = self.find_dir(project_name)
 
         # check if the project directory exists
@@ -457,7 +460,7 @@ class InputWindow(tkinter.Toplevel):
                 "Treatment A": [
                     self.treatment_a_entry.get(),
                     a_dose,
-                    b_dose,
+                    a_unit,
                     # int(self.fish_number_a_entry.get()),
                     note
                 ],
@@ -636,8 +639,6 @@ class Parameters(customtkinter.CTkScrollableFrame):
 
         self.null_label_check()
 
-        self.DATA_ZERO = {k: 0 for k in self.UNITS.keys()}
-
         if self.project_name == "":
             self.null_label = customtkinter.CTkLabel(self, text="No project selected")
             self.null_label.grid(row=0, column=0, padx=5, pady=5)
@@ -704,7 +705,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
         self.clear()
 
         if project_dir == "" or project_dir == None:
-            ori_dict = self.DATA_ZERO
+            ori_dict = DEFAULT_PARAMS
         else:
             self.hyp_path = self.get_hyp_path(project_dir, day_num, treatment_char)
 
@@ -866,7 +867,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
             with open(self.hyp_path, "r") as file:
                 parameters_data = json.load(file)
         except:
-            parameters_data = self.DATA_ZERO
+            parameters_data = DEFAULT_PARAMS
 
         #separate the updated_values.items into 2 groups
         updated_values_simple = {key: updated_value[0] for key, updated_value in updated_values.items() if updated_value[1] == "number"}
@@ -901,7 +902,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
                 try:
                     nested_key_SubKeys = list(parameters_data[nested_key]["1"].keys()) 
                 except:
-                    nested_key_SubKeys = list(self.DATA_ZERO[nested_key]["1"].keys())
+                    nested_key_SubKeys = list(DEFAULT_PARAMS[nested_key]["1"].keys())
                 logger.debug(f"{nested_key_SubKeys=}")
                 #e.g,. with nested_key = Center, "1": {"X": 123, "Y": 45} ->  nested_key_SubKeys = ["X", "Y"]
 

@@ -399,11 +399,6 @@ class MainApp(customtkinter.CTk):
             logger.warning(ErrorType)
             return None, ErrorType
         
-        # Check if the project directory exists
-        project_dir = projects_data[cp]["DIRECTORY"]
-        if not os.path.isdir(project_dir):
-            project_dir = THE_HISTORY.find_dir(project_name = cp)
-    
         # How many Day files are there?
         day_quantity = 0
         day_list = []
@@ -644,7 +639,7 @@ class MainApp(customtkinter.CTk):
             tkinter.messagebox.showerror("Error", ErrorType)
             return
 
-        self.DAYLIST, _ = self.access_history("load Day list")
+        self.DAYLIST, _ = self.access_history("load day list")
 
         # Update the Day options
         self.DayOptions.configure(values=self.DAYLIST)
@@ -679,7 +674,7 @@ class MainApp(customtkinter.CTk):
         self.PROJECT_CREATED = ProjectsInputWindow.PROJECT_CREATED
 
         if self.PROJECT_CREATED:
-
+            logger.info("Project created")
             self.refresh_projects()
             # select the newly created project in the list
             self.scrollable_frame.select_project(self.CURRENT_PROJECT)
@@ -689,7 +684,7 @@ class MainApp(customtkinter.CTk):
             self.load_project(custom_project=self.CURRENT_PROJECT)
 
         else:
-            print("Project not created")
+            logger.info("Project not created")
 
     def load_project(self, custom_project=None):
 
@@ -703,6 +698,9 @@ class MainApp(customtkinter.CTk):
             self.scrollable_frame.set_selected_project(custom_project)
 
         self.CURRENT_PROJECT = selected_project
+
+        # Check if project_dir is valid
+        project_dir = THE_HISTORY.get_project_dir(self.CURRENT_PROJECT)
 
         logger.info(f"Current project: {self.CURRENT_PROJECT}")
 
@@ -755,19 +753,24 @@ class MainApp(customtkinter.CTk):
         else:
             project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
+        logger.debug(f"Load History from {HISTORY_PATH}")
+        with open(HISTORY_PATH, "r") as file:
+            projects_data = json.load(file)
+        
+        logger.debug(f"Put {project_dir} to key = DIRECTORY")
+        # save the directory of the project to the projects_data
+        projects_data[self.CURRENT_PROJECT]["DIRECTORY"] = str(project_dir)
+
+        logger.debug(f"Update History")
+        with open(HISTORY_PATH, "w") as file:
+            json.dump(projects_data, file, indent=4)
+
         treatment_info, _ = self.access_history(command_type = "load treatment list", 
                                              day_name = f"Day {day_num}")
 
         CreateProject(project_dir, treatment_info = treatment_info, day_num = day_num)
 
-        with open(HISTORY_PATH, "r") as file:
-            projects_data = json.load(file)
         
-        # save the directory of the project to the projects_data
-        projects_data[self.CURRENT_PROJECT]["DIRECTORY"] = str(project_dir)
-
-        with open(HISTORY_PATH, "w") as file:
-            json.dump(projects_data, file, indent=4)
 
     def delete_project(self):
 
