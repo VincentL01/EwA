@@ -1069,6 +1069,40 @@ class Importer():
                 json.dump(existing_data, file, indent=2)
 
 
+    def static_backward_compatible_copy(self, old_dir, new_dir):
+        try:
+            logger.debug(f"Trying to read from {old_dir / 'parameters.json'}")
+            with open(old_dir / "parameters.json", "r") as file:
+                old_params = json.load(file)
+        except:
+            old_params = {}
+
+        # Check if old_params keys are the same as DEFAULT_PARAMS keys
+        if old_params.keys() == DEFAULT_PARAMS.keys():
+            logger.debug("Same format, copy directly")
+            shutil.copytree(old_dir, new_dir)
+
+        # Find the keys that are not in DEFAULT_PARAMS
+        expired_keys = [key for key in old_params.keys() if key not in DEFAULT_PARAMS.keys()]
+        logger.debug(f"Found {expired_keys=}, removing..")
+        # Remove them from old_params
+        for key in expired_keys:
+            old_params.pop(key)
+
+        # Find the keys that are not in old_params
+        new_keys = [key for key in DEFAULT_PARAMS.keys() if key not in old_params.keys()]
+        logger.debug(f"Found {new_keys=}, adding..")
+        # Add them with default value in DEFAULT_PARAMS to old_params
+        for key in new_keys:
+            old_params[key] = DEFAULT_PARAMS[key]
+
+        # Save old_params to new_dir/parameters.json
+        new_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Generating parameters.json in {new_dir}")
+        with open(new_dir / "parameters.json", "w") as file:
+            json.dump(old_params, file, indent=4)
+        logger.debug(f"Generated {new_dir / 'parameters.json'}")
+
     def copy_data(self):
         source_dir = self.source_dir
         destination_dir = self.destination_dir
@@ -1078,23 +1112,32 @@ class Importer():
             if day_name == "DIRECTORY":
                 continue
             day_dir = destination_dir / day_name
-            day_dir.mkdir(exist_ok=True)
+            day_dir.mkdir(parents=True, exist_ok=True)
             logger.debug(f"Created {day_dir}")
 
+            logger.debug(f"{self.hasStatic[day_name]=}")
+
             if self.hasStatic[day_name]:
-                logger.debug(f"Found static folder in source, copy static folder to {day_dir}")
-                shutil.copytree(source_dir / day_name / "static", day_dir / "static")
+                logger.debug(f"Found static folder in source, smart copy static folder to {day_dir}")
+                old_static_dir = source_dir / day_name / "static"
+                new_static_dir = day_dir / "static"
+                # Get all treatment-specific static dir within old_static_dir (A, B, C, ..)
+                for old_dir in old_static_dir.iterdir():
+                    new_dir = new_static_dir / old_dir.name
+                    self.static_backward_compatible_copy(old_dir, new_dir)
+                # shutil.copytree(source_dir / day_name / "static", day_dir / "static")
                 logger.debug(f"Copied static folder to {day_dir}")
             else:
+                logger.info(f"No static folder found in source, generating static folder in {day_dir} using DEFAULT PARAMS")
                 static_dir = day_dir / "static"
-                static_dir.mkdir(exist_ok=True)
+                static_dir.mkdir(parents=True, exist_ok=True)
 
                 treatment_chars = [x.split(" ")[1] for x in self.project_data[self.project_name][day_name].keys()]
 
                 #Generate static/treatment_char directories
                 for treatment_char in treatment_chars:
                     static_treatment_dir = static_dir / treatment_char
-                    static_treatment_dir.mkdir(exist_ok=True)
+                    static_treatment_dir.mkdir(parents=True, exist_ok=True)
                     # Use DEFAULT_PARAMS to generate json file in each static/treatment_char directory
                     with open(static_treatment_dir / "parameters.json", "w") as file:
                         json.dump(DEFAULT_PARAMS, file, indent=4)
