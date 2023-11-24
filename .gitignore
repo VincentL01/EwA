@@ -11,6 +11,7 @@ Log/*
 *.ipynb
 test*.py
 *_old.py
+Bin/projects.json
 
 # Distribution / packaging
 .Python
