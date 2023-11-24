@@ -648,9 +648,9 @@ class MainApp(customtkinter.CTk):
         self.DayOptions.set(self.DAYLIST[-1])
 
         # Remove the Day directories and hyp files
-        self.delete_Day_dir(selected_Day)
+        self.delete_day_dir(selected_Day)
     
-    def delete_Day_dir(self, day_name):
+    def delete_day_dir(self, day_name):
         logger.debug("Deleting Day")
 
         day_num = day_name.split(" ")[1]
