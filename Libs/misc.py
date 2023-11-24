@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import re
 import os
-import shutil
+import sys
 from scipy.spatial import ConvexHull
 import numpy as np
 import openpyxl
@@ -370,10 +370,24 @@ def excel_polish(file_path, batch_num=1, inplace=True):
 def open_explorer(path):
     # Check if the given path exists
     if os.path.exists(path):
-        # Open the file explorer
-        subprocess.run(['explorer', os.path.realpath(path)])
+        real_path = os.path.realpath(path)
+        try:
+            if sys.platform.startswith('win'):
+                # Windows
+                subprocess.run(['explorer', real_path])
+            elif sys.platform.startswith('darwin'):
+                # macOS
+                subprocess.run(['open', real_path])
+            elif sys.platform.startswith('linux'):
+                # Linux
+                subprocess.run(['xdg-open', real_path])
+            else:
+                print(f"Unsupported OS: {sys.platform}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
     else:
         print("The provided path does not exist.")
+
 
 def string_diff(string1, string2):
     # Initialize a variable to keep track of the difference count
@@ -423,3 +437,12 @@ def get_folder_info(project_dir, day_num, treatment_char):
         raise Exception(f"Project {project_dir} not found in {HISTORY_PATH}")
     
     return folder_info
+
+
+def to_int_or_float(given_input):
+    output = float(given_input)
+        
+    if output.is_integer():
+        output = int(output)
+    
+    return output

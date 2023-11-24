@@ -93,6 +93,9 @@ class MainApp(customtkinter.CTk):
         self.TREATMENTLIST = ["Treatment A", "Treatment B", "Treatment C"]
         self.EPA = True
 
+        project_dir = THE_HISTORY.get_project_dir(self.CURRENT_PROJECT)
+
+
         # configure window
         APP_TITLE = "Earthworm Analyzer"
         self.title(APP_TITLE)
@@ -262,7 +265,7 @@ class MainApp(customtkinter.CTk):
         # Initial refresh to populate the list
         self.refresh_projects()
 
-        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 400)
+        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 300)
         self.project_detail_container.grid(row=1, column = 1, columnspan=3, padx=20, pady=20, sticky="nsew")
 
         ### COLUMN 2 ###
@@ -322,11 +325,44 @@ class MainApp(customtkinter.CTk):
         self.container_2_bot = customtkinter.CTkFrame(container_2)
         self.container_2_bot.grid(row=CONTAINER_2_ROW, column=0, columnspan=3, sticky="nsew")
 
-        project_dir = THE_HISTORY.get_project_dir(self.CURRENT_PROJECT)
 
         CONTAINER_2_BOT_ROW = 0
-        self.parameters_frame = Parameters(self.container_2_bot, project_dir, height = 500, width = 400)
+        self.parameters_frame = Parameters(self.container_2_bot, project_dir, height = 500, width = 450)
         self.parameters_frame.grid(row=CONTAINER_2_BOT_ROW, columnspan=3, padx=20, pady=20, sticky="nsew")
+
+
+        ### COLUMN 3 ###
+
+        column3_padx = 20
+        column3_pady = (10,5)
+
+        ### COLUMN 3+ ###
+
+        # ROW 0 #
+
+        container_3 = customtkinter.CTkFrame(self, width = 400)
+        container_3.grid(row=0, rowspan=2, column=5, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+        self.nested_key_1_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.nested_key_1_header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
+        self.nested_key_1_frame = Parameters(container_3, 
+                                             project_dir = project_dir, 
+                                             nested_mode = 1)
+        self.nested_key_1_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(10, 20), sticky="nsew")
+
+        # self.nk_add_button = NK_button(container_3, text="Add", width = 20,
+        #                                 row = 2, column = 0,
+        #                                 command=self.nk_add)
+        # self.nk_remove_button = NK_button(container_3, text="Remove", width = 20,
+        #                                 row = 2, column = 1,
+        #                                 command=self.nk_remove)
+        # self.nk_import_button = NK_button(container_3, text="Import", width=20,
+        #                                 row=3, column=0, 
+        #                                 command=self.import_element_dialog)
+        # self.nk_selector_button = NK_button(container_3, text="Select from image", width=20,
+        #                                     row=3, column=0, columnspan=2,
+        #                                     command=self.nk_selector_dialog)
+
 
         # Config
         self.DayOptions.configure(command=self.update_param_display)
@@ -457,6 +493,8 @@ class MainApp(customtkinter.CTk):
             logger.error("Invalid command type")
             raise Exception("Invalid command type")
 
+    ############################################## NESTED KEY FUNCTIONS ######################################################    
+
 
     ##################################################### UPDATER ############################################################    
 
@@ -488,6 +526,11 @@ class MainApp(customtkinter.CTk):
                                               day_num = day_num,
                                               treatment_char = treatment_char,
                                               save_target=save_target)
+        self.nested_key_1_frame.save_parameters(project_dir = project_dir,
+                                                day_num = day_num,
+                                                treatment_char = treatment_char,
+                                                save_target=save_target,
+                                                nested_mode = 1)
 
     def param_display(self, day_num = 1, treatment_char = "A"):
 
@@ -496,6 +539,13 @@ class MainApp(customtkinter.CTk):
         self.parameters_frame.load_parameters(project_dir=project_dir, 
                                               day_num=day_num, 
                                               treatment_char=treatment_char)
+        nested_key_text = self.nested_key_1_frame.load_parameters(project_dir=project_dir,
+                                                day_num=day_num,
+                                                treatment_char=treatment_char,
+                                                nested_mode=1)
+        
+        # Update the nested key header
+        self.nested_key_1_header.configure(text=nested_key_text)
 
         self.LoadedProject.configure(text=self.CURRENT_PROJECT)
 
@@ -1004,7 +1054,7 @@ class MainApp(customtkinter.CTk):
     def analyze_project_THREADED(self):
         logger.debug("Open a new thread to analyze project")
 
-        # save the current parameters
+        # save the current parameters in case the user just have changed something on the current set of parameters
         self.save_parameters(mode='current')
 
         self.EPA = True        

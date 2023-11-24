@@ -7,10 +7,10 @@ import shutil
 import re
 from pathlib import Path
 
-from . import HISTORY_PATH, TEMPLATE_PATH, DEFAULT_PARAMS
-from . import TREATMENT_REP_FORMAT, DAY_FORMAT
+from . import HISTORY_PATH, PARAMS_FILE_NAME
+from . import DEFAULT_PARAMS, PARAMS_UNITS
 from Libs.dirFetch import get_static_dir
-from Libs.misc import index_to_char, find_treatment_num, find_day_num, get_folder_info
+from Libs.misc import index_to_char, to_int_or_float
 
 import logging
 logger = logging.getLogger(__name__)
@@ -612,24 +612,27 @@ class ProjectDetailFrame(customtkinter.CTkScrollableFrame):
 
 class Parameters(customtkinter.CTkScrollableFrame):
 
-    def __init__(self, master, project_dir=None, *args, **kwargs):
+    def __init__(self, master, project_dir=None, nested_mode=None, *args, **kwargs):
         
         super().__init__(master, *args, **kwargs)
 
-        if project_dir == None or project_dir == "":
-            self.project_dir = TEMPLATE_PATH
+        self.project_dir = project_dir
+        if self.project_dir == None:
+            self.project_dir = ""
+            self.project_name = ""
         else:
-            self.project_dir = project_dir
+            self.project_name = Path(self.project_dir).name
+
+        # if project_dir == None or project_dir == "":
+        #     self.project_dir = TEMPLATE_PATH
+        # else:
+        #     self.project_dir = project_dir
             
-        self.project_name = Path(self.project_dir).name
+        # self.project_name = Path(self.project_dir).name
 
         self.null_label = None
-        self.hyp_name = "parameters.json"
-        self.UNITS = {
-            "CONVERSION RATE": "pixels/cm",
-            "FRAME RATE": "frames/second",
-            "DURATION": "seconds",
-        }
+        self.hyp_name = PARAMS_FILE_NAME
+        self.UNITS = PARAMS_UNITS
 
         self.null_label_check()
 
@@ -639,7 +642,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
             self.null_label = customtkinter.CTkLabel(self, text="No project selected")
             self.null_label.grid(row=0, column=0, padx=5, pady=5)
         else:
-            self.load_parameters()
+            self.load_parameters(nested_mode = nested_mode)
 
         self.entries = {}
 
@@ -684,7 +687,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
             return 0
         
 
-    def load_parameters(self, project_dir=None, day_num=1, treatment_char="A"):
+    def load_parameters(self, project_dir=None, day_num=1, treatment_char="A", nested_mode=0):
 
         if project_dir == None:
             project_dir = self.project_dir
@@ -700,73 +703,152 @@ class Parameters(customtkinter.CTkScrollableFrame):
 
         self.clear()
 
-        if project_dir == "":
-            self.hyp_path = TEMPLATE_PATH / 'static' / self.hyp_name
+        if project_dir == "" or project_dir == None:
+            ori_dict = self.DATA_ZERO
         else:
             self.hyp_path = self.get_hyp_path(project_dir, day_num, treatment_char)
 
-        try:
-            logger.debug("Trying to load parameters from json file")
-            with open(self.hyp_path, "r") as file:
-                ori_dict = json.load(file)
+            try:
+                logger.debug("Trying to load parameters from json file")
+                with open(self.hyp_path, "r") as file:
+                    ori_dict = json.load(file)
 
-        except:
-            logger.debug("Unable to load parameters from json file")
-            logger.debug("Load parameters from template file")
-            with open(TEMPLATE_PATH / 'static' / self.hyp_name, "r") as file:
-                ori_dict = json.load(file)
-        
-        display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
-        headers = ["Parameter", "Value", "Unit"]
-        
+            except:
+                logger.debug("Unable to load parameters from json file")
+                logger.debug("Set parameters as default")
+                ori_dict = DEFAULT_PARAMS
+
+        # find the nested keys
+        nested_keys = []
+        for key, value in ori_dict.items():
+            if isinstance(value, dict):
+                nested_keys.append(key)
+
+
+        nested_key = nested_mode
+        if nested_mode == 0:
+            display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
+            headers = ["Parameter", "Value", "Unit"]
+        else:
+            try:
+                nested_key = nested_keys[nested_mode-1]
+            except IndexError:
+                self.null_label = customtkinter.CTkLabel(self, text="No more nested keys")
+                self.null_label.grid(row=0, column=0, padx=5, pady=5) 
+                return "None"
+            
+            display_dict = ori_dict[nested_key]
+
+            example_value = list(display_dict.values())[0]
+            if not isinstance(example_value, dict):
+                logger.error(f"Nested key {nested_key} is not a dict")
+                raise ValueError(f"Nested key {nested_key} is not a dict")
+            headers = ["Well"]
+            for header in example_value.keys():
+                headers.append(header)
+
+        # if not nested key, meaning Global Params -> need unit labels
         example_key = list(display_dict.keys())[0]
-        units = [self.UNITS[k] for k in display_dict.keys()]
-        for i, unit in enumerate(units):
-            unit_label = customtkinter.CTkLabel(self, text=unit)
-            unit_label.grid(row=i+1, column=2, padx=(5,10), pady=5)
+        try:
+            _ = int(example_key)
+            pass
+        except ValueError:
+            units = [self.UNITS[k] for k in display_dict.keys()]
+            for i, unit in enumerate(units):
+                unit_label = customtkinter.CTkLabel(self, text=unit)
+                unit_label.grid(row=i+1, column=2, padx=(5,10), pady=5)
+
 
         self.key_labels = {}
-
         for row, (key, value) in enumerate(display_dict.items()):
             self.key_labels[key] = customtkinter.CTkLabel(self, text=key)
             self.key_labels[key].grid(row=row+1, column=0, padx=5, pady=5)
 
-            value_entry = customtkinter.CTkEntry(self)
-            value_entry.insert(0, value)
-            value_entry.grid(row=row+1, column=1, padx=5, pady=5)
+            if isinstance(value, dict):
+                entry_key = f"{nested_key}_{key}"
+                self.entries[entry_key] = []
 
-            entry_key = key
+                param_value_column = 1
+                nested_entry_width = 120//len(value)
+                for header, param_value in value.items():
+                    value_entry = customtkinter.CTkEntry(self, width=nested_entry_width)
+                    value_entry.insert(0, param_value)
+                    value_entry.grid(row=row+1, column=param_value_column, padx=5, pady=5)
+                    param_value_column += 1
 
-            self.entries[entry_key] = value_entry
+                    self.entries[f"{nested_key}_{key}"].append(value_entry)
+                    logger.debug(f"Added {header} to self.entries[{nested_key}_{key}]")
+            else:
+                entry_key = key
 
-        # make a header
+                value_entry = customtkinter.CTkEntry(self)
+                value_entry.insert(0, value)
+                value_entry.grid(row=row+1, column=1, padx=5, pady=5)
+
+                self.entries[entry_key] = value_entry
+                logger.debug(f"Added {entry_key} to self.entries")
+                
+            # make a header
             for i, header in enumerate(headers):
                 label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
                 label.grid(row=0, column=i, padx=5, pady=5)
+
+        return nested_key
+        # display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
+        # headers = ["Parameter", "Value", "Unit"]
+        
+        # example_key = list(display_dict.keys())[0]
+        # units = [self.UNITS[k] for k in display_dict.keys()]
+        # for i, unit in enumerate(units):
+        #     unit_label = customtkinter.CTkLabel(self, text=unit)
+        #     unit_label.grid(row=i+1, column=2, padx=(5,10), pady=5)
+
+        # self.key_labels = {}
+
+        # for row, (key, value) in enumerate(display_dict.items()):
+        #     self.key_labels[key] = customtkinter.CTkLabel(self, text=key)
+        #     self.key_labels[key].grid(row=row+1, column=0, padx=5, pady=5)
+
+        #     value_entry = customtkinter.CTkEntry(self)
+        #     value_entry.insert(0, value)
+        #     value_entry.grid(row=row+1, column=1, padx=5, pady=5)
+
+        #     entry_key = key
+
+        #     self.entries[entry_key] = value_entry
+
+        # # make a header
+        #     for i, header in enumerate(headers):
+        #         label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
+        #         label.grid(row=0, column=i, padx=5, pady=5)
 
 
     def clear(self):
         for child in self.winfo_children():
             child.destroy()
 
-    def save_parameters(self, project_dir, day_num, treatment_char, save_target):
+    def save_parameters(self, project_dir, day_num, treatment_char, save_target="self", nested_mode=0):
         logger.debug(f"Saving parameters for {Path(project_dir).name}.Day {day_num}.Treatment {treatment_char}, save_target = {save_target}")
 
         def get_entry(entry_dict):
             out_dict = {}
             for key, value in entry_dict.items():
+                logger.debug(f"Processing {key=}, {value=}")
                 try:
                     if isinstance(value, list):
-                        v = [float(value[0].get()), float(value[1].get())]
+                        v = [float(entry.get()) for entry in value]
+                        logger.debug(f"{value=} is list, we have {v=}")
+                        value_type = "list"
                     else:
-                        v = float(value.get())
+                        v = to_int_or_float(value.get())
+                        value_type = "number"
                 except AttributeError:
                     logger.warning(f"During saving parameters for {Path(project_dir).name}.Day {day_num}.Treatment {treatment_char}")
                     logger.warning(f"AttributeError: {key} is not a tkinter entry")
                     logger.warning(f"Value: ", v)
                     logger.warning(f"Value type: ", type(v))
                     continue
-                out_dict[key] = v
+                out_dict[key] = (v, value_type)
             return out_dict
         
         if project_dir == "":
@@ -777,6 +859,7 @@ class Parameters(customtkinter.CTkScrollableFrame):
 
         # Get the values from the entries
         updated_values = get_entry(self.entries)
+        logger.debug(f"{updated_values=}")
         
         # load the original data
         try:
@@ -785,19 +868,70 @@ class Parameters(customtkinter.CTkScrollableFrame):
         except:
             parameters_data = self.DATA_ZERO
 
-        # Update the values in the dictionary with the new values
-        for key, value in updated_values.items():
-            try:
-                parameters_data[key] = value
-            except ValueError:
-                logger.warning(f"Invalid input for {key}: {value}. Skipping.")
+        #separate the updated_values.items into 2 groups
+        updated_values_simple = {key: updated_value[0] for key, updated_value in updated_values.items() if updated_value[1] == "number"}
+        updated_values_nested = {key: updated_value[0] for key, updated_value in updated_values.items() if updated_value[1] == "list"}
+        logger.debug(f"{updated_values_simple=}")
+        logger.debug(f"{updated_values_nested=}")
+
+        # Update the values in Global Parameters
+        if nested_mode == 0:
+            for key, value in updated_values_simple.items():
+                try:
+                    parameters_data[key] = value
+                except ValueError:
+                    _message = f"Invalid input for {key}: {value}, unable to save params of Day {day_num}. Treatment {treatment_char}"
+                    logger.error(_message)
+                    tkinter.messagebox.showerror("Warning", _message)
+                    return
+        else:
+            # Update the values in Well-specific Parameters
+            updated_values_nested_grouped = {}
+            for key, value in updated_values_nested.items():
+                # Convert values in value
+                value = [to_int_or_float(v) for v in value]
+                try:
+                    nested_key, nested_key_well = key.split("_")
+                except Exception as e:
+                    logger.error(f"Invalid key {key} in {self.hyp_path}")
+                    logger.critical(e)
+                    raise e
+                #e.g., with key = Center_1, nested_key = Center, nested_key_well = 1
+
+                try:
+                    nested_key_SubKeys = list(parameters_data[nested_key]["1"].keys()) 
+                except:
+                    nested_key_SubKeys = list(self.DATA_ZERO[nested_key]["1"].keys())
+                logger.debug(f"{nested_key_SubKeys=}")
+                #e.g,. with nested_key = Center, "1": {"X": 123, "Y": 45} ->  nested_key_SubKeys = ["X", "Y"]
+
+                if nested_key not in updated_values_nested_grouped:
+                    updated_values_nested_grouped[nested_key] = {}
+                    # "Center": {}
+                if nested_key_well not in updated_values_nested_grouped[nested_key]:
+                    updated_values_nested_grouped[nested_key][nested_key_well] = {}
+                    # "Center": {"1": {}}
+                for i, SubKey in enumerate(nested_key_SubKeys):
+                    #e.g., value = [321, 54], with SubKeys = ["X", "Y"], SubKey = "X", i = 0 -> updated value for "X" = value[0]
+                    updated_values_nested_grouped[nested_key][nested_key_well][SubKey] = value[i]
+                    # "Center": {"1": {"X": 321, "Y": 54}}
+                logger.debug(f"{updated_values_nested_grouped=}")
         
+            for nested_key, well_info in updated_values_nested_grouped.items():
+                if nested_key not in parameters_data:
+                    logger.error(f"Nested key {nested_key} not found in {self.hyp_path}")
+                    raise ValueError(f"Nested key {nested_key} not found in {self.hyp_path}")
+                parameters_data[nested_key] = well_info
+                logger.debug(f"Assigned {well_info} to {nested_key} in parameters_data")
 
         # Save the updated data to the file
+        logger.debug(f"Saving parameters_data to {self.hyp_path}")
         with open(self.hyp_path, "w") as file:
             json.dump(parameters_data, file, indent=4)
+        logger.debug(f"Dumped {parameters_data} to {self.hyp_path}")
 
-        logger.info(f"Parameters saved to {self.hyp_path}.")
+
+        # code for the CLONE function, when user want to duplicate the parameters to other treatments
         
         if save_target != "self":
             for target_char in save_target:
@@ -986,114 +1120,23 @@ class Importer():
                             shutil.copy(file, destination_batch)
                             logger.debug(f"Copied {file} to {destination_batch}")
 
-                    
+class NK_button(customtkinter.CTkButton):
+    def __init__(self, parent, text, command, row, column, columnspan=1, *args, **kwargs):
+        super().__init__(parent, text=text, command=command, *args, **kwargs)
+        self.parent = parent
+        self.text = text
+        self.command = command
+        self.row = row
+        self.column = column
+        self.columnspan = columnspan
 
+    def show(self):
+        self.grid(row=self.row, 
+                  column=self.column, 
+                  columnspan=self.columnspan, 
+                  padx=5, 
+                  pady=5, 
+                  sticky="nsew")
 
-    # def generate_static_json(self):
-    #     # create a static folder in each Day folder
-    #     for day_name in self.project_data[self.project_name]:
-    #         if day_name == "DIRECTORY":
-    #             continue
-    #         if self.hasStatic[day_name]:
-    #             logger.debug(f"Found static folder in {day_name}.. Skip generating static json")
-    #             continue
-    #         day_dir = self.source_dir / day_name
-    #         static_dir = day_dir / "static"
-    #         static_dir.mkdir(exist_ok=True)
-
-    #         treatment_chars = [x.split(" ")[1] for x in self.project_data[self.project_name][day_name].keys()]
-
-    #         #Generate static/treatment_char directories
-    #         for treatment_char in treatment_chars:
-    #             static_treatment_dir = static_dir / treatment_char
-    #             static_treatment_dir.mkdir(exist_ok=True)
-    #             # Use DEFAULT_PARAMS to generate json file in each static/treatment_char directory
-    #             with open(static_treatment_dir / "parameters.json", "w") as file:
-    #                 json.dump(DEFAULT_PARAMS, file, indent=4)
-    #             logger.debug(f"Generated {static_treatment_dir / 'parameters.json'}")
-        
-
-
-
-    
-# class Importer():
-
-#     def __init__(self, import_project_dir, target_project_dir, trajectories_format="trajectories_nogaps.txt"):
-                 
-#         self.import_project_dir = Path(import_project_dir)
-#         self.target_project_dir = Path(target_project_dir)
-#         self.trajectories_format = trajectories_format
-
-#         self.new_treatments = []
-
-
-#     def import_trajectories(self):
-#         import_data = self.data_sorter()
-#         self.data_distributor(import_data)
-
-
-#     def data_sorter(self):
-#         # find all directories inside
-#         treatment_dirs = [x for x in self.import_project_dir.iterdir() if x.is_dir() and "-" in x.name]
-
-#         import_data = {}
-
-#         self.import_treatment_names = {}
-
-#         for treatment_dir in treatment_dirs:
-#             treatment_char = index_to_char(find_treatment_num(treatment_dir.name)-1)
-#             import_data[treatment_char] = {}
-#             self.import_treatment_names[treatment_char] = treatment_dir.name.split("-")[1].split("(")[0].strip()
-
-#             day_dirs = [x for x in treatment_dir.iterdir() if x.is_dir()]
-
-#             for day_dir in day_dirs:
-#                 day_name = day_dir.name
-#                 day_num = find_day_num(day_name)
-#                 if day_num not in import_data[treatment_char]:
-#                     import_data[treatment_char][day_num] = {}
-
-#                 # [TODO] Redo this to fit with our mini-batch within the Treatment folders
-#                 if "side view" in day_name.lower():
-#                     import_data[treatment_char][day_num]["Side View"] = day_dir / self.trajectories_format
-#                 elif "top view" in day_name.lower():
-#                     import_data[treatment_char][day_num]["Top View"] = day_dir / self.trajectories_format
-
-#         return import_data
-
-
-#     def data_distributor(self, import_data):
-#         for treatment_char in import_data:
-#             for day_num in import_data[treatment_char]:
-#                 for view in import_data[treatment_char][day_num]:
-#                     logger.debug(f"Working with {treatment_char} - Day {day_num} - {view}")
-#                     target_path = self.get_project_path(treatment_char, day_num, view)
-#                     if target_path.exists():
-#                         logger.debug(f"[WARNING] {target_path} already exists!")
-#                     # copy the file from import_data to target_path
-#                     shutil.copy(import_data[treatment_char][day_num][view], target_path)
-#                     logger.debug(f"Copied {import_data[treatment_char][day_num][view]} to {target_path}")
-
-
-#     def get_project_path(self, treatment_char, day_num, view):
-#         day_dir = self.target_project_dir / f"Day {day_num}"
-#         # find within day_dir, folder with f"{treatmentchar} -"
-#         try:
-#             treatment_dir = [x for x in day_dir.iterdir() if x.is_dir() and f"{treatment_char} -" in x.name][0]
-#         except:
-#             day_dir.mkdir(exist_ok=True)
-#             treatment_dir = day_dir / f"{treatment_char} - {self.import_treatment_names[treatment_char]}"
-#             treatment_dir.mkdir(exist_ok=True)
-#             logger.warning("Treatment folder not found! Creating new folder based on import data...")
-#             new_info = {
-#                 "char": treatment_char,
-#                 "name": self.import_treatment_names[treatment_char],
-#                 "day_num": day_num
-#             }
-#             self.new_treatments.append(new_info)
-
-#         view_dir = treatment_dir / view
-#         view_dir.mkdir(exist_ok=True)
-#         view_path = view_dir / self.trajectories_format
-
-#         return view_path
+    def hide(self):
+        self.grid_forget()                    

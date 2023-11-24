@@ -6,7 +6,7 @@ from Libs.analyzer import GeneralAnalysis
 from Libs.general import Parameters
 from Libs.misc import count_csv_file, append_df_to_excel, excel_polish, merge_cells, check_sheet_existence, remove_sheet_by_name
 from Libs.dirFetch import get_working_dir, get_treatment_dir
-from . import TEMPLATE_PATH, CHARS
+from . import CHARS
 
 import logging
 
@@ -123,8 +123,8 @@ class Executor():
         _starttime = time.time()
 
         if project_dir == None:
-            self.project_dir = TEMPLATE_PATH
-            logger.warning("No project directory specified. Using template directory instead.")
+            self.project_dir = ""
+            logger.warning("No project directory specified")
         else:
             self.project_dir = project_dir
 

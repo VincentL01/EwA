@@ -11,7 +11,7 @@ from scipy.optimize import linear_sum_assignment
 from scipy.stats import pearsonr
 
 from Libs.misc import *
-from . import ALLOWED_DECIMALS, TEMPLATE_PATH, RAW_FORMAT_SEPARATOR, RAW_FORMAT_INDICATOR
+from . import ALLOWED_DECIMALS, RAW_FORMAT_SEPARATOR, RAW_FORMAT_INDICATOR
 from . import BATCH_FOLDER_FORMAT, CHARS, NEG_INF, POS_INF, DEFAULT_PARAMS
 from . import WELL_CENTER_POINTS, CENTER_RANGE
 from Libs.dirFetch import get_static_dir, get_treatment_dir
@@ -32,7 +32,7 @@ class Parameters():
     def __init__(self, project_dir=None, day_num=1, treatment_char="A"):
 
         if project_dir == None:
-            self.project_dir = TEMPLATE_PATH
+            self.project_dir = ""
             logger.warning("No project directory specified. Using template directory instead.")
         else:
             self.project_dir = project_dir
@@ -47,12 +47,11 @@ class Parameters():
 
         self.PARAMS = self.FirstLoad()
 
-    
     def __getitem__(self, key, refresh=False):
         if refresh:
             self.Refresh()
         return self.PARAMS.get(key, None)
-
+    
 
     def Refresh(self):
         self.PARAMS = self.Load(self)
@@ -83,7 +82,24 @@ class Parameters():
         
         # Convert all values to float
         for key, value in data.items():
-            data[key] = float(value)
+            if isinstance(value, str):
+                try:
+                    data[key] = to_int_or_float(value)
+                except:
+                    raise ValueError(f"INVALID FORMAT: Value of {key} is a non-convertible string ({value=}), please check your input.")
+            elif isinstance(value, (int, float)):
+                data[key] = to_int_or_float(value)
+            elif isinstance(value, dict):
+                for well_num, coord_dict in value.items():
+                    for axis, coord in coord_dict.items():
+                        try:
+                            data[key][well_num][axis] = to_int_or_float(coord)
+                        except:
+                            raise ValueError(f"INVALID FORMAT: Value of {key} is not convertible ({data[key][well_num][axis]}), please check your input.")
+            else:
+                # get value type of value
+                value_type = type(value)
+                raise ValueError(f"INVALID FORMAT: At {key}, {value=} is a {value_type}, please check your input.")
 
         return data
     
@@ -110,6 +126,7 @@ class Loader():
         self.project_dir = project_dir
         self.day_num = day_num
         self.treatment_char = treatment_char
+        self.worm_num = worm_num
         self.PARAMS = params
 
         self.group_name = BATCH_FOLDER_FORMAT.format(group_num)
@@ -125,22 +142,28 @@ class Loader():
                                                treatment_char = self.treatment_char)
         
         self.GROUP = self.GroupLoader()
-        self.Loaded = self.assign_worm(worm_num)
+        self.Loaded = self.assign_worm()
 
 
     ################################# FISH LOADER #################################
 
-    def assign_worm(self, worm_num=1):
+    def assign_worm(self):
+        # try:
+        #     self.WORM = self.GROUP[str(worm_num)]
+        #     self.EXTRA_PARAMS = {}
+        #     self.EXTRA_PARAMS["CENTER X"] = WELL_CENTER_POINTS[str(worm_num)]["X"]
+        #     self.EXTRA_PARAMS["CENTER Y"] = WELL_CENTER_POINTS[str(worm_num)]["Y"]
+        #     return True
+        # except KeyError:
+        #     logger.error(f"Failed to load worm {worm_num} from {self.group_name}")
+        #     return False
         try:
-            self.WORM = self.GROUP[str(worm_num)]
-            self.EXTRA_PARAMS = {}
-            self.EXTRA_PARAMS["CENTER X"] = WELL_CENTER_POINTS[str(worm_num)]["X"]
-            self.EXTRA_PARAMS["CENTER Y"] = WELL_CENTER_POINTS[str(worm_num)]["Y"]
-            return True
+            self.WORM = self.GROUP[str(self.worm_num)]
         except KeyError:
-            logger.error(f"Failed to load worm {worm_num} from {self.group_name}")
+            logger.error(f"Failed to load worm {self.worm_num} from {self.group_name}")
             return False
-
+        return True
+        
     def GroupLoader(self):
 
         group_path = self.treatment_dir / self.group_name
@@ -157,15 +180,12 @@ class Loader():
         
         return group_dict
 
-    
     def WormLoader(self, csv_path):
         df = pd.read_csv(csv_path, header=0, index_col=0)
-        df.columns = ["X", "Y"]
-        # x_col = df.columns[0]
-        # y_col = df.columns[1]
-        # return_dict = {}
-        # return_dict["x"] = list(df[x_col].values)
-        # return_dict["y"] = list(df[y_col].values)
+        if len(df.columns) == 2:
+            df.columns = ["X", "Y"]
+        elif len(df.columns) == 3:
+            df.columns = ["X", "Y", "Z"]
         return df
     
     def distance_traveled(self):
@@ -173,7 +193,7 @@ class Loader():
 
         for i in range(len(self.WORM)-1):
             distance = 0
-            for axis in ["X", "Y"]:
+            for axis in self.WORM.columns:
                 distance += (self.WORM[axis].iloc[i+1] - self.WORM[axis].iloc[i])**2
             distance = math.sqrt(distance)
             distance = distance / self.PARAMS["CONVERSION RATE"]
@@ -182,13 +202,32 @@ class Loader():
             # UNIT: cm
 
         return Distance(distance_list = distance_list)
-
+    
     def distance_to(self, TARGET = "CENTER"):
         distance_list = []
+        try:
+            all_worm_target_params = self.PARAMS[TARGET]
+        except KeyError:
+            logger.error(f"Failed to load {TARGET} from parameters.json")
+            raise KeyError(f"Failed to load {TARGET} from parameters.json")
+        
+        try:
+            target_params = all_worm_target_params[str(self.worm_num)]
+        except KeyError:
+            logger.error(f"Failed to load {TARGET} for worm {self.worm_num}")
+            raise KeyError(f"Failed to load {TARGET} for worm {self.worm_num}")
+        
         for _, row in self.WORM.iterrows():
             distance = 0
-            for axis in ["X", "Y"]:
-                distance += (row[axis] - self.EXTRA_PARAMS[f"{TARGET} {axis}"]) ** 2
+            for axis, param_coord in target_params.items():
+                try:
+                    row_value = row[axis]
+                except KeyError:
+                    _message = f"No {axis} coordinate found in Treatment {self.treatment_char}, {self.group_name}, Worm {self.worm_num}"
+                    logger.error(_message)
+                    raise KeyError(_message)
+                distance += (row_value - param_coord) ** 2
+
             distance = np.sqrt(distance)
             distance = distance/self.PARAMS["CONVERSION RATE"]
             distance = round(distance, ALLOWED_DECIMALS)
@@ -196,27 +235,9 @@ class Loader():
 
         return Distance(distance_list)
     
-    def within_range(self, distance_list, range=CENTER_RANGE):
-        return [1 if distance <= range else 0 for distance in distance_list]
+    def within_range(self, distance_list):
+        return [1 if distance <= self.PARAMS["THIGMOTAXIS RANGE"] else 0 for distance in distance_list]
 
-    # def distance_to(self, TARGET="CENTER"):
-
-    #     MARKS = {}
-    #     for axis in ["X", "Y", "Z"]:
-    #         MARKS[axis] = self.PARAMS[f"{TARGET} {axis}"]
-
-    #     distance_list = []
-
-    #     for _, row in self.FISH.iterrows():
-    #         distance = 0
-    #         for axis in ["X", "Y", "Z"]:
-    #             distance += (row[axis] - MARKS[axis]) ** 2
-    #         distance = np.sqrt(distance)
-    #         distance = distance/self.PARAMS["CONVERSION TV"]
-    #         distance_list.append(distance)
-
-    #     return distance_list
-    
 
 class CustomDisplay():
 

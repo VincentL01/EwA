@@ -1,27 +1,4 @@
 {
-  "tester": {
-    "Day 1": {
-      "Treatment A": [
-        "Control",
-        "",
-        0.5,
-        ""
-      ],
-      "Treatment B": [
-        "eux",
-        0.5,
-        "ppm",
-        ""
-      ],
-      "Treatment C": [
-        "eux",
-        5.0,
-        "ppm",
-        ""
-      ]
-    },
-    "DIRECTORY": "/Users/lap02410/Documents/VSCode/TestProjects/tester"
-  },
   "Eu (Finish Calculate)": {
     "Day 1": {
       "Treatment A": [
