@@ -99,7 +99,7 @@ class MainApp(customtkinter.CTk):
         # configure window
         APP_TITLE = "Earthworm Analyzer"
         self.title(APP_TITLE)
-        self.geometry(f"{1500}x{900}")
+        self.geometry(f"{1250}x{650}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=0) 
@@ -241,31 +241,31 @@ class MainApp(customtkinter.CTk):
         container_1.grid_columnconfigure(0, weight=0)
 
         # Top part
-        container_2_top = customtkinter.CTkFrame(container_1)
-        container_2_top.grid(row=0, column=0, sticky="nsew")
+        container_1_top = customtkinter.CTkFrame(container_1)
+        container_1_top.grid(row=0, column=0, sticky="nsew")
 
-        project_previews_label = customtkinter.CTkLabel(container_2_top, text="Project List", font=customtkinter.CTkFont(size=20, weight="bold"))
+        project_previews_label = customtkinter.CTkLabel(container_1_top, text="Project List", font=customtkinter.CTkFont(size=20, weight="bold"))
         project_previews_label.configure(**BOLD_LABEL_CONFIG)
         project_previews_label.grid(row=0, column=0)
 
         # Bottom part
-        bottom_part = customtkinter.CTkFrame(container_1)
-        bottom_part.grid(row=1, column=0, sticky="nsew")
+        container_1_bot = customtkinter.CTkFrame(container_1)
+        container_1_bot.grid(row=1, column=0, sticky="nsew")
 
-        bottom_part.grid_rowconfigure(0, weight=1)
-        bottom_part.grid_rowconfigure(1, weight=0)
+        container_1_bot.grid_rowconfigure(0, weight=1)
+        container_1_bot.grid_rowconfigure(1, weight=0)
 
-        self.scrollable_frame = ScrollableProjectList(bottom_part)
-        self.scrollable_frame.grid(row=0, column=0, sticky="nsew")
+        self.ProjectList = ScrollableProjectList(container_1_bot)
+        self.ProjectList.grid(row=0, column=0, sticky="nsew")
 
-        refresh_button = customtkinter.CTkButton(bottom_part, text="Refresh", command=self.refresh_projects)
+        refresh_button = customtkinter.CTkButton(container_1_bot, text="Refresh", command=self.refresh_projects)
         refresh_button.configure(**BUTTON_CONFIG)
         refresh_button.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
 
         # Initial refresh to populate the list
         self.refresh_projects()
 
-        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 300)
+        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 200)
         self.project_detail_container.grid(row=1, column = 1, columnspan=3, padx=20, pady=20, sticky="nsew")
 
         ### COLUMN 2 ###
@@ -327,8 +327,11 @@ class MainApp(customtkinter.CTk):
 
 
         CONTAINER_2_BOT_ROW = 0
-        self.parameters_frame = Parameters(self.container_2_bot, project_dir, height = 500, width = 450)
-        self.parameters_frame.grid(row=CONTAINER_2_BOT_ROW, columnspan=3, padx=20, pady=20, sticky="nsew")
+        self.parameters_frame = Parameters(self.container_2_bot, 
+                                           project_dir, 
+                                           height = 500, 
+                                           width = 400)
+        self.parameters_frame.grid(row=CONTAINER_2_BOT_ROW, padx=20, pady=20, sticky="nsew")
 
 
         ### COLUMN 3 ###
@@ -677,7 +680,7 @@ class MainApp(customtkinter.CTk):
             logger.info("Project created")
             self.refresh_projects()
             # select the newly created project in the list
-            self.scrollable_frame.select_project(self.CURRENT_PROJECT)
+            self.ProjectList.select_project(self.CURRENT_PROJECT)
 
             self.save_project()
 
@@ -691,11 +694,11 @@ class MainApp(customtkinter.CTk):
         logger.debug("Load project button pressed")
 
         if custom_project == None:
-            selected_project = self.scrollable_frame.get_selected_project()
+            selected_project = self.ProjectList.get_selected_project()
         else:
             selected_project = custom_project
             # set the current project to the custom project
-            self.scrollable_frame.set_selected_project(custom_project)
+            self.ProjectList.set_selected_project(custom_project)
 
         self.CURRENT_PROJECT = selected_project
 
@@ -780,7 +783,7 @@ class MainApp(customtkinter.CTk):
             return
 
         # Get the selected project
-        selected_project = self.scrollable_frame.get_selected_project()
+        selected_project = self.ProjectList.get_selected_project()
 
         if selected_project == "":
             tkinter.messagebox.showerror("Error", "Please select a project")
@@ -818,7 +821,7 @@ class MainApp(customtkinter.CTk):
         logger.debug("Refresh projects")
 
         # Clear existing project labels
-        self.scrollable_frame.clear_projects()
+        self.ProjectList.clear_projects()
 
         # Read the projects.json file and add project names to the list
         try:
@@ -829,7 +832,7 @@ class MainApp(customtkinter.CTk):
             return
 
         for project_name in projects_data.keys():
-            self.scrollable_frame.add_project(project_name)
+            self.ProjectList.add_project(project_name)
 
 
     def import_trajectories(self):
