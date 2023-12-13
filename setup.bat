@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set "python_version=3.9.13"
-set "venv_name=TAN_env"
+set "venv_name=vincent"
 
 REM set TAN_dir to current directory
 set "TAN_dir=%~dp0"
