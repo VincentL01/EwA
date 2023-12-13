@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set "venv_name=taa"
+set "venv_name=vincent"
 
 REM set TAN_dir to directory of this file
 set "TAN_dir=%~dp0"
