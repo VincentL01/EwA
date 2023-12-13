@@ -91,7 +91,6 @@ if !env_found!==0 (
 :checkpoint_a
 set activate_cmd="!bat_path!" "!env_path!"
 
-
 @REM set activate_cmd="call !bat_path! %venv_name%"
 
 echo Activating virtual environment... 
