@@ -45,16 +45,58 @@ if !bat_found!==0 (
   echo Anaconda or Miniconda already installed
 )
 
-if exist "!conda_path!\envs\%venv_name%" (
-  echo %venv_name% already exists
-) else (
-  echo %venv_name% not found
-  echo Creating virtual environment with Python %python_version%...
-  call !conda_path!\Scripts\conda create -n %venv_name% python==%python_version% -y
+
+set "bat_found=0"
+set "env_found=0"
+
+for %%p in (
+  "C:\ProgramData\miniconda3"
+  "C:\ProgramData\Anaconda3"
+  "C:\ProgramData\.conda"
+  "%UserProfile%\miniconda3"
+  "%UserProfile%\.conda"
+  "%UserProfile%\Anaconda3"
+) do (
+    if exist "%%~p\envs\%venv_name%" (
+        set "env_path=%%~p\envs\%venv_name%"
+        set "env_found=1"
+        if exist "%%~p\Scripts\activate.bat" (
+          set "conda_path=%%~p"
+          set "bat_path=%%~p\Scripts\activate.bat"
+          set "bat_found=1"
+          @REM go to checkpoint a
+          goto :checkpoint_a
+        )
+    )
+    if exist "%%~p\Scripts\activate.bat" (
+        set "bat_path=%%~p\Scripts\activate.bat"
+        set "bat_found=1"
+    )
 )
 
-echo Activating virtual environment... at !conda_path!\envs\%venv_name%
-call !conda_path!\Scripts\activate.bat %venv_name%
+if !bat_found!==0 (
+    echo activate.bat not found in any of the specified paths.
+    echo Please rerun setup.bat to install Miniconda3.
+    pause
+    exit
+)
+
+if !env_found!==0 (
+    echo Environment %venv_name% not found in any of the specified paths.
+    echo Creating virtual environment with Python %python_version%...
+    call !conda_path!\Scripts\conda create -n %venv_name% python==%python_version% -y
+)
+
+@REM CheckPoint A
+:checkpoint_a
+set activate_cmd="!bat_path!" "!env_path!"
+
+
+@REM set activate_cmd="call !bat_path! %venv_name%"
+
+echo Activating virtual environment... 
+echo Running %active_cmd%
+call %activate_cmd%
 
 echo Installing TAN requirements
 cd %TAN_dir%
