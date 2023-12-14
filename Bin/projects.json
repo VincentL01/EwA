@@ -1,1 +1,19 @@
-{}
+{
+    "test": {
+        "Day 1": {
+            "Treatment A": [
+                "Control",
+                0.15,
+                "ppm",
+                ""
+            ],
+            "Treatment B": [
+                "Eu",
+                0.5,
+                "ppm",
+                ""
+            ]
+        },
+        "DIRECTORY": "/Users/lap02410/Documents/VSCode/test"
+    }
+}

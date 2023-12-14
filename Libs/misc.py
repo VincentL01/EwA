@@ -446,3 +446,93 @@ def to_int_or_float(given_input):
         output = int(output)
     
     return output
+
+
+def find_uncommon_substrings(list_of_strings):
+    """
+    Extracts the different parts (uncommon substrings) from a list of strings.
+
+    :param list_of_strings: List of strings to compare
+    :return: List of uncommon substrings
+    """
+    if not list_of_strings:
+        return []
+
+    # Find the shortest string to avoid index out of range errors
+    min_length = min(len(s) for s in list_of_strings)
+
+    # Initialize variables
+    differing_indices = []
+    prev_diff = False
+
+    # Identify indices where strings differ
+    for i in range(min_length):
+        chars = {s[i] for s in list_of_strings}
+        if len(chars) > 1:
+            if not prev_diff:
+                differing_indices.append(i)
+            prev_diff = True
+        else:
+            if prev_diff:
+                differing_indices.append(i)
+            prev_diff = False
+
+    # Extract the uncommon substrings
+    uncommon_substrings = set()
+    for i in range(0, len(differing_indices), 2):
+        start = differing_indices[i]
+        end = differing_indices[i + 1]
+        substrings = {s[start:end] for s in list_of_strings}
+        uncommon_substrings.update(substrings)
+
+    return_list = list(uncommon_substrings)
+    return_list = [int(i) if i.isdigit() else i for i in return_list]
+    return_list.sort()
+
+    return return_list
+
+
+def find_uncommon_substrings_in_paths(list_of_paths):
+    """
+    Extracts the different parts (uncommon substrings) from a list of pathlib.Path objects
+    and returns a dictionary mapping each uncommon substring to the corresponding Path object.
+
+    :param list_of_paths: List of pathlib.Path objects to compare
+    :return: Dictionary of uncommon substrings and their corresponding Path objects
+    """
+    if not list_of_paths:
+        return {}
+
+    # Extract the name part of each path
+    list_of_strings = [p.name for p in list_of_paths]
+
+    # Find the shortest string to avoid index out of range errors
+    min_length = min(len(s) for s in list_of_strings)
+
+    # Initialize variables
+    differing_indices = []
+    prev_diff = False
+
+    # Identify indices where strings differ
+    for i in range(min_length):
+        chars = {s[i] for s in list_of_strings}
+        if len(chars) > 1:
+            if not prev_diff:
+                differing_indices.append(i)
+            prev_diff = True
+        else:
+            if prev_diff:
+                differing_indices.append(i)
+            prev_diff = False
+
+    # Extract the uncommon substrings and map them to paths
+    uncommon_substrings_dict = {}
+    for i in range(0, len(differing_indices), 2):
+        start = differing_indices[i]
+        end = differing_indices[i + 1] if i + 1 < len(differing_indices) else min_length
+        for path in list_of_paths:
+            uncommon_substring = path.name[start:end]
+            if uncommon_substring:
+                uncommon_substrings_dict[uncommon_substring] = path
+
+    return uncommon_substrings_dict

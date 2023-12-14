@@ -173,8 +173,9 @@ class Loader():
         if len(list(raw_files)) == 0:
             logger.error(f"No raw files found at {group_path}")
             raise FileNotFoundError(f"No raw files found at {group_path}")
-            # [TODO] Do a better job than just raising an error
-        group_dict = {f.name.split(RAW_FORMAT_SEPARATOR)[-1].split(RAW_FORMAT_INDICATOR)[0].strip():f for f in raw_files}
+
+        group_dict = find_uncommon_substrings_in_paths(raw_files)
+        # group_dict = {f.name.split(RAW_FORMAT_SEPARATOR)[-1].split(RAW_FORMAT_INDICATOR)[0].strip():f for f in raw_files}
         for worm_num, csv_path in group_dict.items():
             group_dict[worm_num] = self.WormLoader(csv_path) # Return as dataframe of 2 columns X and Y
         
