@@ -1,0 +1,10 @@
+Pillow
+pandas
+numpy
+matplotlib
+tk
+openpyxl
+tqdm
+customtkinter
+colorlog
+scipy
