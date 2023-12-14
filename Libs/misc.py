@@ -536,3 +536,28 @@ def find_uncommon_substrings_in_paths(list_of_paths):
                 uncommon_substrings_dict[uncommon_substring] = path
 
     return uncommon_substrings_dict
+
+
+def find_uncommon_substrings_in_paths_general(list_of_paths):
+    """
+    Extracts the different parts (uncommon substrings) from a list of pathlib.Path objects
+    and returns a dictionary mapping each uncommon substring to the corresponding Path object.
+    This version focuses on numeric parts as the uncommon substrings.
+
+    :param list_of_paths: List of pathlib.Path objects to compare
+    :return: Dictionary of uncommon substrings and their corresponding Path objects
+    """
+    if not list_of_paths:
+        return {}
+
+    # Extract the name part of each path and find all numeric substrings
+    substrings = {}
+    for path in list_of_paths:
+        # Find all numeric substrings in the filename
+        numeric_parts = re.findall(r'\d+', path.name)
+
+        # Map each numeric part to the path (assuming each part is unique across the paths)
+        for part in numeric_parts:
+            substrings[part] = path
+
+    return substrings

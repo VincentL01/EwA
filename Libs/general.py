@@ -175,7 +175,7 @@ class Loader():
             logger.error(f"No raw files found at {group_path}")
             raise FileNotFoundError(f"No raw files found at {group_path}")
 
-        group_dict = find_uncommon_substrings_in_paths(raw_files)
+        group_dict = find_uncommon_substrings_in_paths_general(raw_files)
         # group_dict = {f.name.split(RAW_FORMAT_SEPARATOR)[-1].split(RAW_FORMAT_INDICATOR)[0].strip():f for f in raw_files}
         logger.debug(f"Loaded group_dict: {group_dict}")
         for worm_num, csv_path in group_dict.items():
