@@ -21,7 +21,7 @@ CHARS = [chr(i) for i in range(65, 65+26)]
 # STRUCTURAL CONSTANTS
 PARAMS_FILE_NAME = "parameters.json"
 
-RAW_FORMAT_INDICATOR = "-position.csv"
+RAW_FORMAT_INDICATOR = "-position*.csv"
 RAW_FORMAT_SEPARATOR = "Well"
 BATCH_FOLDER_FORMAT = "Batch {}"
 
