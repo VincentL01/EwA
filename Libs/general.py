@@ -142,6 +142,7 @@ class Loader():
                                                treatment_char = self.treatment_char)
         
         self.GROUP = self.GroupLoader()
+        logger.debug(f"Loaded GROUP: {self.GROUP}")
         self.Loaded = self.assign_worm()
 
 
@@ -176,6 +177,7 @@ class Loader():
 
         group_dict = find_uncommon_substrings_in_paths(raw_files)
         # group_dict = {f.name.split(RAW_FORMAT_SEPARATOR)[-1].split(RAW_FORMAT_INDICATOR)[0].strip():f for f in raw_files}
+        logger.debug(f"Loaded group_dict: {group_dict}")
         for worm_num, csv_path in group_dict.items():
             group_dict[worm_num] = self.WormLoader(csv_path) # Return as dataframe of 2 columns X and Y
         
