@@ -367,7 +367,8 @@ class InputWindow(tkinter.Toplevel):
         bottom_canvas.grid(row=1, column=0, sticky="nsew")
 
         # Add button
-        add_button = customtkinter.CTkButton(bottom_canvas, text="Add Treatment", 
+        add_button = customtkinter.CTkButton(bottom_canvas, text="Add Group", 
+                                                font = self.BOLD_FONT, 
                                                 command=self.add_treatment)
         add_button.grid(row=0, column=0, padx=5, pady=20)
 
@@ -420,7 +421,7 @@ class InputWindow(tkinter.Toplevel):
         logger.debug("Add treatment button clicked")
 
         treatment_row = len(self.treatment_widgets)*3 + self.ROW + 1
-        treatment_name = f"Treatment {chr(ord('C') + len(self.treatment_widgets))}:"
+        treatment_name = f"Group {chr(ord('C') + len(self.treatment_widgets))}:"
 
         treatment_label = customtkinter.CTkLabel(self.top_canvas, text=treatment_name, font=self.BOLD_FONT)
         treatment_label.grid(row=treatment_row, column=0, pady=(20, 5))

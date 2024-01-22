@@ -1,19 +1,100 @@
 {
-    "test": {
-        "Day 1": {
-            "Treatment A": [
-                "Control",
-                0.15,
-                "ppm",
-                ""
-            ],
-            "Treatment B": [
-                "Eu",
-                0.5,
-                "ppm",
-                ""
-            ]
-        },
-        "DIRECTORY": "/Users/lap02410/Documents/VSCode/test"
-    }
+  "test": {
+    "Day 1": {
+      "Treatment A": [
+        "Control",
+        0.15,
+        "ppm",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        0.5,
+        "ppm",
+        ""
+      ]
+    },
+    "DIRECTORY": "/Users/lap02410/Documents/VSCode/test"
+  },
+  "Eu (Finish Calculate)": {
+    "Day 1": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "Day 2": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "Day 3": {
+      "Treatment A": [
+        "Control",
+        "",
+        "",
+        ""
+      ],
+      "Treatment B": [
+        "Eu",
+        "0.1",
+        "ppm",
+        ""
+      ],
+      "Treatment C": [
+        "Eu",
+        "1",
+        "ppm",
+        ""
+      ],
+      "Treatment D": [
+        "Eu",
+        "10",
+        "ppm",
+        ""
+      ]
+    },
+    "DIRECTORY": "D:\\TestSave\\Eu (Finish Calculate)"
+  }
 }
